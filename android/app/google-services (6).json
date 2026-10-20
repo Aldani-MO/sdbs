@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "765717885230",
+    "project_id": "sdbs-b9b3a",
+    "storage_bucket": "sdbs-b9b3a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765717885230:android:77dc0a235c7007b7000abf",
+        "android_client_info": {
+          "package_name": "com.example.sdbs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDV3ogA9Hptk0sEjbY6XVMHvrQXbrOwvHU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
