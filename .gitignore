@@ -43,5 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-# Firebase Secrets
+# Firebase Secrets & Edge Module runtime
 **/serviceAccountKey.json
+**/offline_queue.db
+**/__pycache__/
+*.pyc

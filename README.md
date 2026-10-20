@@ -3,7 +3,10 @@
 <img src="https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white"/>
 <img src="https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black"/>
 <img src="https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white"/>
-<img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-blueviolet?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
+<img src="https://img.shields.io/badge/YOLO-v8n-00FFFF?style=for-the-badge&logo=yolo&logoColor=black"/>
+<img src="https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white"/>
+<img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20IoT-blueviolet?style=for-the-badge"/>
 <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge"/>
 
 <br/><br/>
@@ -131,6 +134,15 @@ Role-aware authentication with input validation, secure password hashing, and Fi
 | 🚌 **Trip Dispatcher** | Relational Document Linking | Assign driver, bus, and route to initiate live transit trips |
 | 📡 **Live Fleet Telemetry** | Multi-document Snapshot Streams | High-level fleet dashboard tracking all active buses and passenger loads |
 | 📊 **Transit Analytics** | Decision Logging & Donut Charts | Visual reports on STOP/SKIP/EARLY DEPART ratios and high-demand stops |
+
+### 👁️ AI Computer Vision & Edge IoT Module (On-Bus Detection)
+| Feature | Technical Implementation | Description |
+|---|---|---|
+| 📷 **Real-Time Video Ingestion** | OpenCV (`cv2.VideoCapture`) | Ingests live RTSP feeds, USB webcams, or video files at configurable FPS |
+| 🧠 **YOLOv8 Passenger Detection** | Ultralytics YOLOv8n (`detector.py`) | Deep learning object detection identifying passengers with confidence thresholding |
+| 📡 **Live Telemetry Synchronization** | Firebase Admin SDK (`uploader.py`) | Writes live passenger headcount directly to `buses/{busId}.currentOccupancy` |
+| 🛡️ **Offline Resilient Queue** | SQLite Storage (`offline_queue.py`) | Caches occupancy records locally during cellular network dropouts and auto-flushes on reconnect |
+| 📊 **Historical Analytics Streaming** | Firestore `occupancyRecords` | Records continuous occupancy history for city transit capacity analysis |
 
 ---
 
@@ -295,6 +307,10 @@ service cloud.firestore {
 | **Mapping Engine** | [flutter_map](https://pub.dev/packages/flutter_map) + [latlong2](https://pub.dev/packages/latlong2) | High-performance open-source mapping |
 | **QR Code Pipeline** | [mobile_scanner](https://pub.dev/packages/mobile_scanner) + [qr_flutter](https://pub.dev/packages/qr_flutter) | Hardware camera barcode scanning & rendering |
 | **Form Validation** | [form_validator](https://pub.dev/packages/form_validator) | Resilient client-side validation |
+| **AI / Object Detection** | [Ultralytics YOLOv8n](https://github.com/ultralytics/ultralytics) | Real-time on-bus passenger headcount detection |
+| **Computer Vision** | [OpenCV](https://opencv.org/) | Video stream capture and frame preprocessing |
+| **Edge Backend** | Python 3.9+ + Firebase Admin SDK | Edge IoT daemon updating Firestore bus occupancy |
+| **Local Offline Buffer** | SQLite3 | Resilient offline queuing for cellular dropouts |
 
 ---
 
@@ -371,6 +387,15 @@ smart-dynamic-bus-system/
 │   └── utils/
 │       └── error_handler.dart      # Centralized error reporting & snackbars
 ├── screenshots/                    # High-resolution screenshots showcasing all portals
+├── edge-module/                    # AI Computer Vision Edge IoT Subsystem
+│   ├── main.py                     # Entry point & CLI argument parser
+│   ├── detector.py                 # YOLOv8 object detection & person counter
+│   ├── uploader.py                 # Firebase Admin SDK telemetry dispatcher
+│   ├── offline_queue.py            # SQLite offline-resilient upload queue
+│   ├── config.py                   # Bus ID, camera source & threshold configs
+│   ├── requirements.txt            # Python dependencies (ultralytics, opencv, firebase-admin)
+│   ├── serviceAccountKey.json.example # Firebase credentials template
+│   └── README.md                   # Edge module hardware & run instructions
 ├── firestore.rules                 # Enterprise Firestore role-based security rules
 ├── LICENSE                         # MIT License
 ├── pubspec.yaml                    # Project dependencies and asset definitions
