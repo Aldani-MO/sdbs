@@ -1,0 +1,161 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────
+    // Helper functions
+    // ─────────────────────────────────────────────────────────────
+
+    // Is the user logged in at all?
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Is the request coming from the owner of this document?
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // What is the current user's role in Firestore?
+    function myRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() { return isAuth() && myRole() == 'Admin'; }
+    function isDriver() { return isAuth() && myRole() == 'Driver'; }
+    function isPassenger() { return isAuth() && myRole() == 'Passenger'; }
+
+    // ─────────────────────────────────────────────────────────────
+    // USERS collection
+    // ─────────────────────────────────────────────────────────────
+    match /users/{uid} {
+      // Any logged-in user can read any user profile (needed for driver/admin lookups)
+      allow read: if isAuth();
+
+      // You can create your OWN account document (happens during sign-up)
+      // OR an Admin can create any user document (admin user management)
+      allow create: if isAdmin()
+        || (isOwner(uid)
+          && request.resource.data.role == 'Passenger'   // self-signup is ALWAYS Passenger
+          && request.resource.data.balance == 0.0);       // cannot start with a pre-loaded balance
+
+      // You can update your OWN profile, BUT:
+      // - cannot change your own role (prevents self-promotion to Admin)
+      // - cannot change your own balance directly (prevents fake top-ups)
+      allow update: if isOwner(uid)
+        && request.resource.data.role == resource.data.role       // role unchanged
+        && request.resource.data.balance == resource.data.balance // balance unchanged
+        || isAdmin(); // Admins can update anything on any user
+
+      // Only Admins can delete user documents
+      allow delete: if isAdmin();
+
+      // Transactions sub-collection (wallet history)
+      match /transactions/{txId} {
+        allow read: if isOwner(uid);
+        // Only the owner can write transactions (top-up records)
+        allow create: if isOwner(uid) && request.resource.data.amount > 0;
+        allow update, delete: if false; // transactions are immutable
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // STOPS collection
+    // ─────────────────────────────────────────────────────────────
+    match /stops/{stopId} {
+      // Any logged-in user can read stops (needed for routes page)
+      allow read: if isAuth();
+      // Only Admin can create, update, or delete stops
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // ROUTES collection
+    // ─────────────────────────────────────────────────────────────
+    match /routes/{routeId} {
+      // Any logged-in user can read routes
+      allow read: if isAuth();
+      // Only Admin can manage routes
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // BUSES collection
+    // ─────────────────────────────────────────────────────────────
+    match /buses/{busId} {
+      // All logged-in users can read bus occupancy (shown on home screen)
+      allow read: if isAuth();
+      // Only the edge module (Admin service account) or Admins can write bus data
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // TRIPS collection
+    // ─────────────────────────────────────────────────────────────
+    match /trips/{tripId} {
+      // All logged-in users can read trips (drivers see their own, passengers see status)
+      allow read: if isAuth();
+      // Only Admins can create or delete trips
+      allow create, delete: if isAdmin();
+      // Drivers can update ONLY their own assigned trip (e.g., updating status)
+      allow update: if isAdmin()
+        || (isDriver() && resource.data.driverId == request.auth.uid);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // CHECK-INS collection
+    // ─────────────────────────────────────────────────────────────
+    match /checkIns/{checkInId} {
+      // Users can read their own check-ins; Admins and Drivers can read all
+      allow read: if isAuth() && (
+        isAdmin() ||
+        isDriver() ||
+        resource.data.passengerID == request.auth.uid
+      );
+      // A passenger can only create a check-in for themselves
+      allow create: if isAuth()
+        && request.resource.data.passengerID == request.auth.uid;
+      // Admins or Drivers can update/delete (driver clears check-ins on boarding)
+      allow update, delete: if isAdmin() || isDriver();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // STOP DECISIONS collection (written by edge module)
+    // ─────────────────────────────────────────────────────────────
+    match /stopDecisions/{docId} {
+      allow read: if isAuth();
+      // Written by DecisionService from the Driver's client session,
+      // or via Admin SDK from the edge module (which bypasses rules).
+      allow write: if isAdmin() || isDriver();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // NOTIFICATIONS collection
+    // ─────────────────────────────────────────────────────────────
+    match /notifications/{notifId} {
+      // Users can only read their own notifications
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      // Admins and Drivers can create notifications (Driver sends SKIP/EARLY alerts)
+      allow create: if isAdmin() || isDriver();
+      // Users can mark their own notification as read (update only)
+      allow update: if isAuth() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // OCCUPANCY RECORDS collection (written by AI edge module)
+    // ─────────────────────────────────────────────────────────────
+    match /occupancyRecords/{docId} {
+      // Admin panel reads for analytics; edge module writes via Admin SDK
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // DENY everything else not explicitly listed above
+    // ─────────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

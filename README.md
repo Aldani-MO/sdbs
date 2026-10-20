@@ -310,8 +310,8 @@ service cloud.firestore {
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/ALDANI-MO/sdbs.git
-cd sdbs
+git clone https://github.com/ALDANI-MO/smart-dynamic-bus-system.git
+cd smart-dynamic-bus-system
 
 # 2. Install Flutter packages
 flutter pub get
@@ -332,7 +332,7 @@ flutter run
 ## 📁 Project Structure
 
 ```
-sdbs/
+smart-dynamic-bus-system/
 ├── lib/
 │   ├── main.dart                   # Entry point, Firebase initialization & Provider bindings
 │   ├── firebase_options.dart       # Generated Firebase configuration
@@ -372,6 +372,7 @@ sdbs/
 │       └── error_handler.dart      # Centralized error reporting & snackbars
 ├── screenshots/                    # High-resolution screenshots showcasing all portals
 ├── firestore.rules                 # Enterprise Firestore role-based security rules
+├── LICENSE                         # MIT License
 ├── pubspec.yaml                    # Project dependencies and asset definitions
 └── README.md                       # Documentation & showcase
 ```
@@ -380,8 +381,10 @@ sdbs/
 
 ## 👤 Author
 
-**Mohammad Al-Dani**  
-- GitHub: [@ALDANI-MO](https://github.com/ALDANI-MO)
+**Mohamed Aldani**  
+- 📧 **Email:** [Mohammedaldani03@gmail.com](mailto:Mohammedaldani03@gmail.com)  
+- 📱 **Phone / WhatsApp:** [+965 98862755](https://wa.me/96598862755) (`0096598862755`)  
+- 🐙 **GitHub:** [@ALDANI-MO](https://github.com/ALDANI-MO)  
 
 ---
 
